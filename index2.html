@@ -1,0 +1,312 @@
+<html>
+<head>
+<style>
+body {
+    background-color: #d0e4fe;
+}
+li {
+            display: inline ;
+            padding: 0px 3px 0px 3px ;
+            }
+
+div {
+margin-top : 10px;
+margin-bottom : 10px;
+}
+</style>
+<script src="jquery.min.js"></script>
+<script>
+var princip_val ;/* variable to which the returned object shall be assigned*/
+var dash_table_index = new Array();/* index of dashes */
+var dash_table_lengths = new Array();/*number of columns of tables*/
+var cols_slect_clear; /*this variable holds columns*/
+
+/*- ready function -*/
+$(document).ready(function(){
+$("#input_form").hide();
+$("#entt_fix_fix").hide();
+$("#assoc_form").hide();
+$("#assoc_fix").hide();
+$("#bind_submit").hide();
+$("#check_for_schema").click(function(){
+	var givenSchemaName = document.getElementById("schema_name").value;
+$.post("MyFirstSourceFile_2.xsjs", {check_1 : givenSchemaName}, function(data, status){ 
+	if (data === "{}")
+		{alert("enter correct schema name");}
+	else
+    {
+		princip_val = JSON.parse(data);
+		form_function(); /*this function adds tables names in dropdown*/
+		stor_indexes(); /*to retrieve column of tables in schema*/
+		
+		
+		$("#input_form").show();
+		$("#entt_fix_fix").show();
+		$("#assoc_form").show();
+		$("#assoc_fix").show();
+		$("#bind_submit").show();
+    }
+	});
+});
+
+//when association and entity adders are cliked below funtions are invoked
+$("#assoc_add").click(function(){
+add_assoc();
+});
+$("#entities_adder").click(function(){
+adde_entiti();
+});
+
+//to bind and submit
+$("#bind_submit").click(function(){
+bind_and_send();
+});
+});
+/*- ready function ends here-*/
+ 
+ /*function to store indexes*/
+function stor_indexes()
+{
+	alert(JSON.stringify(princip_val.column_values));
+	
+	var start_val = 0 ;
+	while(princip_val.column_values.indexOf("-", start_val)+1)
+		{
+		dash_table_index.push(princip_val.column_values.indexOf("-", start_val));
+		start_val = princip_val.column_values.indexOf("-", start_val)+1;
+		}
+	for (var i=0 ; i < (dash_table_index.length-1) ; i++)
+		{
+		dash_table_lengths.push(dash_table_index[i+1] - dash_table_index[i] - 1);
+		}
+	dash_table_lengths.push(princip_val.column_values.length - (princip_val.column_values.lastIndexOf("-")+1) );
+	
+	alert(dash_table_index[0] + "-" + dash_table_index[1] +"-"+ dash_table_index[2] +"-"+dash_table_index[3]);
+	alert(dash_table_lengths[0] + "-" + dash_table_lengths[1] +"-"+ dash_table_lengths[2] +"-"+dash_table_lengths[3]);	
+}
+/*function to store indexes ends here*/
+/*form function*/
+function form_function ()
+{
+	var sel_upd = document.getElementById("ddl");
+	var sel_upd1 = document.getElementById("ddl1");
+	var sel_upd2 = document.getElementById("ddl2");
+	var i = princip_val.table_values.length;
+	while (i>0)
+	{
+	var opt = document.createElement("option");
+	opt.setAttribute("value", princip_val.table_values[i-1]);
+	opt.innerHTML = princip_val.table_values[i-1];
+	var opt2 = document.createElement("option");
+	opt2.setAttribute("value", princip_val.table_values[i-1]);
+	opt2.innerHTML = princip_val.table_values[i-1];
+	var opt3 = document.createElement("option");
+	opt3.setAttribute("value", princip_val.table_values[i-1]);
+	opt3.innerHTML = princip_val.table_values[i-1];
+	sel_upd.appendChild(opt);
+	sel_upd1.appendChild(opt2);
+	sel_upd2.appendChild(opt3);
+	i=i-1;
+	}
+}
+/*form function ends here*/
+
+/* definition of jsFunction called from entity adder forms table values when changed */
+function jsFunction(uniqarg){
+alert (uniqarg);
+var tab_index = princip_val.table_values.indexOf(uniqarg);
+var tab_col_index = dash_table_index[tab_index]+1;
+var tab_col_length = dash_table_lengths[tab_index];
+
+var ul_ad = document.getElementById("colums");
+ul_ad.innerHTML = '';
+cols_slect_clear = '';
+ 
+for (var ind=tab_col_index ; ind < tab_col_index+tab_col_length ; ind++ )
+	{
+	var chkbx = document.createElement("input");
+	 chkbx.setAttribute("type", "checkbox");
+	 chkbx.setAttribute("id", princip_val.column_values[ind]);
+	 chkbx.setAttribute("value", princip_val.column_values[ind]);
+	 chkbx.setAttribute("onClick", "myfunfunction(this.value)");
+	 chkbx.setAttribute("style", "display:inline");
+	 var li = document.createElement("li");
+	 li.appendChild(chkbx);
+	 var p_el =document.createElement("h5");
+	 p_el.setAttribute("style", "display:inline");
+	 p_el.innerHTML= princip_val.column_values[ind];
+	 li.appendChild(p_el);
+	 ul_ad.appendChild(li);
+	} 
+}
+/* jsfunction definition ends here */
+
+/* this function is called from jsfunction of entity adder to concatenate selected columns */
+function myfunfunction(uniqarg1)
+{
+cols_slect_clear=cols_slect_clear+"\""+uniqarg1+"\",";
+}
+/* definition of myfunfunction ends here */
+
+
+ /* jsfunctions1&2 called when 2 tables of add associations are changed */
+ function jsfunction1(uniqarg){
+ var sel_upd1 = document.getElementById("col_val");
+ sel_upd1.innerHTML= '';
+ var tab_index = princip_val.table_values.indexOf(uniqarg);
+ var tab_col_index = dash_table_index[tab_index]+1;
+ var tab_col_length = dash_table_lengths[tab_index];
+ for (var ind=tab_col_index ; ind < tab_col_index+tab_col_length ; ind++  )
+ {
+ 	var opt = document.createElement("option");	
+ 	opt.setAttribute("value", princip_val.column_values[ind]);
+ 	opt.innerHTML =princip_val.column_values[ind];
+ 	sel_upd1.appendChild(opt);
+ }
+ }
+
+ function jsfunction2(uniqarg){
+ 	var sel_upd1 = document.getElementById("col_val1");
+ 	sel_upd1.innerHTML= '';
+ 	var tab_index = princip_val.table_values.indexOf(uniqarg);
+ 	var tab_col_index = dash_table_index[tab_index]+1;
+ 	var tab_col_length = dash_table_lengths[tab_index];
+ 	for (var ind=tab_col_index ; ind < tab_col_index+tab_col_length ; ind++  )
+ 	{
+ 		var opt = document.createElement("option");	
+ 		opt.setAttribute("value", princip_val.column_values[ind]);
+ 		opt.innerHTML =princip_val.column_values[ind];
+ 		sel_upd1.appendChild(opt);
+ 	}
+ }
+ /*- jsfuntions1&2 end here */
+ 
+ /*definitions of add_assoc and add_entiti which are called when associations or entities are added */
+function add_assoc(){
+var assoc_name_val=document.getElementById("assoc_name").value;
+var assoc_princi_tab_val=document.getElementById("ddl1").value;
+var assoc_princi_colum_val=document.getElementById("col_val").value;
+var assoc_princi_mul_val=$('input[name="multiplicity"]:checked').val();
+var assoc_dep_tab_val=document.getElementById("ddl2").value;
+var assoc_dep_colum_val=document.getElementById("col_val1").value;
+var assoc_dep_mul_val=$('input[name="multiplicity1"]:checked').val();
+
+if ( !(assoc_name_val == '') && !(assoc_princi_tab_val == '') && !(assoc_princi_colum_val == '') && !(typeof assoc_princi_mul_val === 'undefined') && !(assoc_dep_tab_val == '') && !(assoc_dep_colum_val == '') && !(typeof assoc_dep_mul_val === 'undefined'))
+{
+alert ("process");
+var associationes = "association \""+assoc_name_val+"\" principal \""+assoc_princi_tab_val+"\"(\""+assoc_princi_colum_val+"\") multiplicity \""+assoc_princi_mul_val+"\" dependent \""+assoc_dep_tab_val+"\"(\""+assoc_dep_colum_val+"\") multiplicity \""+assoc_dep_mul_val+"\"";
+alert (associationes);
+var adde = document.createElement("p");
+adde.innerHTML=associationes;
+var as_fi=document.getElementById("assoc_fix");
+as_fi.appendChild(adde);
+var add_navi = document.getElementById("ddl4");
+var elem = document.createElement("option");
+elem.innerHTML=assoc_name_val;
+elem.setAttribute("value", assoc_name_val);
+add_navi.appendChild(elem);
+}
+else
+{
+alert ("please enter all values");
+}
+
+}
+
+function adde_entiti()
+{
+var schem_name=document.getElementById("schema_name").value;
+var entt_nam=document.getElementById("entity_name").value;
+var entt_tab_name=document.getElementById("ddl").value;
+var entt_col_sel=cols_slect_clear;
+var navi_name =document.getElementById("navigate_as").value;
+var asso_name =document.getElementById("ddl4").value;
+if( !(entt_nam=='') && !(entt_tab_name=='') && !(entt_col_sel=='') && !(navi_name=='') && !(asso_name==''))
+{
+var entti_val="\""+schem_name+"\".\""+entt_tab_name+"\" as \""+entt_nam+"\" with ("+entt_col_sel+") navigates (\""+asso_name+"\" as \""+navi_name+"\")";
+alert (entti_val);
+var as_fi=document.getElementById("entt_fix_fix");
+var adde = document.createElement("p");
+adde.innerHTML=entti_val;
+as_fi.appendChild(adde);
+}
+else
+{alert ("please enter all values");}
+}
+/* end of definition for add_assoc and add_entiti -*/
+/* definition for bind_and_send */
+function bind_and_send(){
+var entt_fin='';
+var asoc_fin='';
+var searchEles = document.getElementById("entt_fix_fix").children;
+var searchElesi = document.getElementById("assoc_fix").children;
+for(var i = 0; i < searchEles.length; i++){
+entt_fin = entt_fin+searchEles[i].innerHTML+"\;";
+}
+for(var i = 0; i < searchElesi.length; i++){
+asoc_fin = asoc_fin+searchElesi[i].innerHTML+"\;";
+}
+var statement_fin="service {"+entt_fin+asoc_fin+"}";
+alert(statement_fin);
+}
+</script>
+</head>
+<body>
+<!-- all elements are devided into divs we have 5 divs with ID= schema_div, input_form, entt_fix_fix, assoc_form, assoc_fix-->
+
+<div id="schema_div" style="border-style: solid; border-width: 0px; border-radius: 10px; width: 700px; horizontal-align : center; padding: 10px; background-color:#AFEEEE">
+ Enter Schema Name : <input type="text" id="schema_name" style="width:200px;">
+
+ <input type="button" id="check_for_schema" value="Check Schema"/>
+</div>
+
+
+<div id="input_form" style="border-style: solid; border-width: 0px; border-radius: 10px; width: 700px; horizontal-align : center; padding: 10px; background-color:#AFEEEE">
+ Entity Name : <input type="text" id="entity_name" style="width:200px; margin-left:50px"></br>
+
+ Table Name :
+ <select id ="ddl" name="ddl" onchange="jsFunction(this.value);" style="width:200px; margin-left:53px"></select></br>
+
+ <ul id="colums"></ul>
+
+ Navigates Property : <select id ="ddl4" name="ddl4" style="width:200px; margin-left:8px"></select> as : <input type ="text" id="navigate_as" style="width:200px"/></br>
+
+ <input type="button" id="entities_adder" value="Add This Entity">
+</div>
+
+
+<div id = "entt_fix_fix" style="border-style: solid; border-width: 0px; border-radius: 10px; width: 700px; horizontal-align : center; padding: 10px; background-color:white"></div>
+
+
+<div id="assoc_form" style="border-style: solid; border-width: 0px; border-radius: 10px; width: 700px; horizontal-align : center; padding: 10px; background-color:#AFEEEE">
+ Associatio Name :<input type="text" id="assoc_name" style="width:200px; margin-left:28px"></br>
+
+ Priciple Table : 
+ <select id ="ddl1" name="ddl1" onchange="jsfunction1(this.value);" style="width:200px; margin-left:43px">
+ </select></br>
+
+ select column :
+ <select id = "col_val" style="width:200px; margin-left:45px">
+ </select></br>
+
+ multiplicity :1<input type="radio" name="multiplicity" value="1">*<input type="radio" name="multiplicity" value="*"></br>
+
+ Dependent Table : 
+ <select id ="ddl2" name="ddl2" onchange="jsfunction2(this.value);" style="width:200px; margin-left:23px">
+ </select></br>
+
+ select column :
+ <select id = "col_val1" style="width:200px; margin-left:45px">
+ </select></br>
+
+ multiplicity :1<input type="radio" name="multiplicity1" value="1">*<input type="radio" name="multiplicity1" value="*"></br>
+
+ <input type="button" id="assoc_add" value="Add this Association">
+</div>
+
+
+<div id = "assoc_fix" style="border-style: solid;border-width: 0px; border-radius: 10px; width: 700px; horizontal-align : center; padding: 10px; background-color:white"></div>
+
+<input type="button" id="bind_submit" value="Bind and Submit">
+</body>
+</html>
